@@ -85,17 +85,13 @@ public class LerpColour : MonoBehaviour
         //This is the modulos operation, so every 50 points this will increment the speed once
         if (score % 10 == 0)
         {
-            //Making sure it does not increment when the score is at 0
-            if (score != 0)
-            {
                 //Bool to say that when hasSpedUp is false it will call the function and set it to true so that it only goes through this once
-                if (hasSpedUp == false)
+                if (hasSpedUp == false && !(difficulty <= 5))
                 {
                     hasSpedUp = true;
                     difficulty -= 1;
                     timer = difficulty;
                 }
-            }
         }
         else
         {
