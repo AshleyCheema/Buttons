@@ -11,6 +11,7 @@ public class LerpColour : MonoBehaviour
     //ArrayStuff
     public GameObject[] buttons;
     private int randomButtons = 0;
+    private int randomButtons2 = 0;
     private int previousArrayNum = 0;
 
     //Ray Stuff
@@ -36,8 +37,8 @@ public class LerpColour : MonoBehaviour
     {
         //Find all buttons that have the tag button
         buttons = GameObject.FindGameObjectsWithTag("Button");
-        timer = difficulty = 15.0f;
-        RequestBanner();
+        timer = difficulty = 10.0f;
+        //RequestBanner();
     }
 
     void Update()
@@ -55,41 +56,51 @@ public class LerpColour : MonoBehaviour
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
         //If the left mouse button is clicked and the raycast hits then
-        if (/*Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began*/ Input.GetMouseButtonDown(0) && Physics.Raycast(ray, out hit))
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began || Input.GetMouseButtonDown(0) && Physics.Raycast(ray, out hit))
         {
-            //if the hit equals the current lit up button gameobject then
-            if (hit.collider.gameObject == buttons[randomButtons].gameObject && buttons[randomButtons].gameObject.GetComponent<Renderer>().material.color == colourEnd)
+            //ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
+
+            if (Physics.Raycast(ray, out hit))
             {
-                //Increment score by one, output that out to GUI and then change the green back to white. Stopwatch then restarts
-                score += 1;
-                scoreText.text = "Score: " + score.ToString();
-                buttons[randomButtons].GetComponent<Renderer>().material.color = Color.Lerp(colourEnd, colourStart, Time.time * lerpTime);
-                timer = difficulty;
-            }
-            else
-            {
-                //If the current lit up button is not pressed so either missed or clicked the wrong one then go to the end game function
-                ShowEndGameUI();
+
+                //if the hit equals the current lit up button gameobject then
+                if (hit.collider.gameObject == buttons[randomButtons].gameObject && buttons[randomButtons].gameObject.GetComponent<Renderer>().material.color == colourEnd)
+                {
+                    Properties();
+                    buttons[randomButtons].GetComponent<Renderer>().material.color = Color.Lerp(colourEnd, colourStart, Time.time * lerpTime);
+
+                }
+                else if(hit.collider.gameObject == buttons[randomButtons2].gameObject && buttons[randomButtons2].gameObject.GetComponent<Renderer>().material.color == colourEnd)
+                {
+                    Properties();
+                    buttons[randomButtons2].GetComponent<Renderer>().material.color = Color.Lerp(colourEnd, colourStart, Time.time * lerpTime);
+                }
+                else
+                {
+                    //If the current lit up button is not pressed so either missed or clicked the wrong one then go to the end game function
+                    ShowEndGameUI();
+                }
             }
         }
 
-        if (previousArrayNum != randomButtons && buttons[previousArrayNum].gameObject.GetComponent<Renderer>().material.color == colourEnd)
+        if (timer <= 0.01f && buttons[randomButtons].gameObject.GetComponent<Renderer>().material.color == colourEnd)
         {
             ShowEndGameUI();
         }
-        else
+        if(timer <= 0.01f && buttons[randomButtons2].gameObject.GetComponent<Renderer>().material.color == colourEnd)
         {
             previousArrayNum = randomButtons;
         }
 
-        //This is the modulos operation, so every 50 points this will increment the speed once
+        //This is the modulos operation, so every 10 points this will increment the speed once
         if (score % 10 == 0)
         {
                 //Bool to say that when hasSpedUp is false it will call the function and set it to true so that it only goes through this once
                 if (hasSpedUp == false && !(difficulty <= 5))
                 {
                     hasSpedUp = true;
-                    difficulty -= 1;
+                    difficulty -= 1.5f;
+                    difficulty = Mathf.Clamp(difficulty, 2, 10);
                     timer = difficulty;
                 }
         }
@@ -110,7 +121,34 @@ public class LerpColour : MonoBehaviour
         //reset timer
         timer = difficulty;
 
-        UnityEngine.Debug.Log(randomButtons);
+        if(score >= 15)
+        {
+            RandomButton();
+        }
+
+        UnityEngine.Debug.Log(buttons[randomButtons].name);
+    }
+
+    void RandomButton()
+    {
+        randomButtons2 = Random.Range(0, buttons.Length);
+
+        if (randomButtons == randomButtons2)
+        {
+            RandomButton();
+        }
+        else
+        {
+            buttons[randomButtons2].GetComponent<Renderer>().material.color = Color.Lerp(colourStart, colourEnd, Time.time * lerpTime);
+        }
+    }
+
+    void Properties()
+    {
+        //Increment score by one, output that out to GUI and then change the green back to white. Stopwatch then restarts
+        score += 1;
+        scoreText.text = "Score: " + score.ToString();
+        timer = difficulty;
     }
 
     void ShowEndGameUI()
